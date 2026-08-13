@@ -1,5 +1,6 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import sourceDescriptions from "./sourceDescriptions.json";
 type Item = {
   name: string;
   status: "Movilizado" | "Pipeline" | "Convocatoria";
@@ -9,6 +10,7 @@ type Item = {
   components: string[];
   axes: string[];
   summary: string;
+  detail: string;
   tag: string;
 };
 const COMPONENTS = [
@@ -292,6 +294,7 @@ const I: Item[] = [
       components: taxonomy[String(x[0])].components,
       axes: taxonomy[String(x[0])].axes,
       summary: x[6],
+      detail: sourceDescriptions[String(x[0]) as keyof typeof sourceDescriptions] || x[6],
       tag: x[7],
     }) as Item,
 );
@@ -392,11 +395,22 @@ const fmt = (n: number | null) =>
         notation: n >= 1e6 ? "compact" : "standard",
         maximumFractionDigits: n >= 1e6 ? 2 : 0,
       }).format(n);
+const portfolioAliases: Record<string,string> = {
+  "Estrategia de biometano":"Estrategia nacional de biometano", "Normas para la adaptación climática":"Normas para la acción climática",
+  "Hidrógeno verde":"Ecosistema de hidrógeno verde", "Impulso al hidrógeno verde":"Ecosistema de hidrógeno verde", "H₂":"Ecosistema de hidrógeno verde",
+  "Semiconductores":"Competencias y proveedores en semiconductores", "Baterías":"Segunda vida inteligente de baterías", "Segunda vida de baterías":"Segunda vida inteligente de baterías",
+  "Economía azul":"Economía azul y ecosistemas de surf", "Economía azul – segunda fase":"Segunda fase de economía azul", "Blue Economy Global Call":"Blue Economy Global Call 2026",
+  "Talamanca costera":"Talamanca Transforma", "Juventud rural en La Cruz":"Juventud rural y emprendimiento en La Cruz", "Juventud rural":"Juventud rural y emprendimiento en La Cruz",
+  "Adaptación climática":"Normas para la acción climática", "Adaptación":"Normas para la acción climática", "Café":"Trazabilidad y sostenibilidad del café",
+  "Biometano":"Estrategia nacional de biometano", "Carne":"Cooperación Sur–Sur en carne bovina", "Construcción":"Construcción circular",
+  "Trazabilidad":"Trazabilidad y sostenibilidad del café", "Cooperación Sur–Sur":"Cooperación Sur–Sur en café", "Emprendimiento":"Juventud rural y emprendimiento en La Cruz",
+  "Talamanca":"Talamanca Transforma", "Normas para acción climática":"Normas para la acción climática",
+};
 const cpComponents=[
- {n:"01",title:"Desarrollo de habilidades técnicas para el empleo",industry:"Construye el talento que requiere una industria más tecnológica, circular y baja en carbono.",actions:"Semiconductores · baterías · hidrógeno verde · juventud rural · articulación INA",pndip:"Empleabilidad basada en demanda; Sistema Nacional de Empleo; formación técnica y vinculación con empresas.",level:"Directa"},
- {n:"02",title:"Energías renovables y descarbonización",industry:"Reduce costos, emisiones y riesgos mientras abre mercados de tecnología y servicios industriales.",actions:"Biometano y REIF · hidrógeno verde · GMP cemento e industria · A2D",pndip:"Ambiente y Energía: descarbonización, producción sostenible, NDC y transición hacia crecimiento verde.",level:"Directa"},
- {n:"03",title:"Economía circular y eficiencia de recursos",industry:"Transforma residuos y materiales en productividad, inversión, proveedores y modelos de negocio.",actions:"Construcción circular · segunda vida de baterías · Talamanca · economía azul",pndip:"Producción y consumo sostenibles; transición hacia economía circular en industria, agroalimentos, turismo y construcción.",level:"Directa"},
- {n:"04",title:"Infraestructura de la calidad",industry:"Convierte normas, trazabilidad, metrología y certificación en acceso a mercados y confianza.",actions:"Statement café · ISO adaptación · mapa agropecuario · carne bovina · construcción",pndip:"Exportaciones; producción sostenible; reconocimiento de fincas; estándares constructivos y reducción de barreras productivas.",level:"Complementaria"}
+ {n:"01",title:"Desarrollo de habilidades técnicas para el empleo",industry:"Construye el talento que requiere una industria más tecnológica, circular y baja en carbono.",actions:[{label:"Semiconductores",item:"Competencias y proveedores en semiconductores"},{label:"Segunda vida de baterías",item:"Segunda vida inteligente de baterías"},{label:"Hidrógeno verde",item:"Ecosistema de hidrógeno verde"},{label:"Juventud rural",item:"Juventud rural y emprendimiento en La Cruz"}],pndip:"Empleabilidad basada en demanda; Sistema Nacional de Empleo; formación técnica y vinculación con empresas.",level:"Directa"},
+ {n:"02",title:"Energías renovables y descarbonización",industry:"Reduce costos, emisiones y riesgos mientras abre mercados de tecnología y servicios industriales.",actions:[{label:"Estrategia de biometano",item:"Estrategia nacional de biometano"},{label:"REIF Biometano",item:"REIF Biometano"},{label:"Hidrógeno verde",item:"Ecosistema de hidrógeno verde"},{label:"GMP cemento e industria",item:"Global Matchmaking Platform"},{label:"A2D Facility",item:"A2D Facility"}],pndip:"Ambiente y Energía: descarbonización, producción sostenible, NDC y transición hacia crecimiento verde.",level:"Directa"},
+ {n:"03",title:"Economía circular y eficiencia de recursos",industry:"Transforma residuos y materiales en productividad, inversión, proveedores y modelos de negocio.",actions:[{label:"Construcción circular",item:"Construcción circular"},{label:"Segunda vida de baterías",item:"Segunda vida inteligente de baterías"},{label:"Talamanca Transforma",item:"Talamanca Transforma"},{label:"Economía azul",item:"Economía azul y ecosistemas de surf"}],pndip:"Producción y consumo sostenibles; transición hacia economía circular en industria, agroalimentos, turismo y construcción.",level:"Directa"},
+ {n:"04",title:"Infraestructura de la calidad",industry:"Convierte normas, trazabilidad, metrología y certificación en acceso a mercados y confianza.",actions:[{label:"Statement café",item:"Trazabilidad y sostenibilidad del café"},{label:"ISO adaptación",item:"Normas para la acción climática"},{label:"Mapa agropecuario",item:"Mapa de Uso Agropecuario"},{label:"Carne bovina",item:"Cooperación Sur–Sur en carne bovina"},{label:"Construcción circular",item:"Construcción circular"}],pndip:"Exportaciones; producción sostenible; reconocimiento de fincas; estándares constructivos y reducción de barreras productivas.",level:"Complementaria"}
 ];
 const crossAxes=[
  ["Juventud y equidad de género","Participación de mujeres y jóvenes en capacitación, innovación, emprendimiento y empleos verdes."],
@@ -432,15 +446,15 @@ const meicSynergies=[
  {stage:"Pipeline",name:"Cooperación Sur–Sur en carne bovina",amount:"USD 7.000",benefit:"Conocimiento para plantas interesadas en exportar a la Unión Europea.",relevance:"Infraestructura de calidad y armonización productiva y comercial.",action:"Vincular plantas, proveedores y Sistema Nacional para la Calidad.",component:CALIDAD},
 ];
 const privateCalls=[
- {name:"UNIDO–WTCA Blue Economy Global Call 2026",short:"BLUE ECONOMY",url:"https://itpo-rome.unido.org/GlobalCall2026/",image:"/brand/woman-solar.jpeg",fit:"MIPYMES y empresas con soluciones innovadoras, escalables y listas para desplegar en la economía azul.",benefit:"Visibilidad internacional, conexiones empresariales y de inversión, promoción ante la red ONUDI–WTCA y posicionamiento global.",support:"Aceleración y matchmaking",areas:["Energía azul renovable","Alimentos azules sostenibles","Puertos y transporte verde","Turismo costero","Restauración acuática","Blue Tech y biotecnología"],prepare:"Solución demostrable, evidencia de impacto, escalabilidad, modelo de negocio y propuesta de despliegue internacional.",note:"La convocatoria admite postulaciones de micro, pequeñas, medianas y grandes empresas."},
- {name:"Accelerate-to-Demonstrate Facility",short:"A2D FACILITY",url:"https://a2dfacility.unido.org/",image:"/brand/women-production.jpeg",fit:"Empresas y consorcios capaces de implementar proyectos demostrativos catalíticos en países elegibles para AOD.",benefit:"Subvención para implementar y operar demostraciones que reduzcan el riesgo tecnológico y aceleren la comercialización.",support:"Financiamiento demostrativo",areas:["Hidrógeno limpio","Minerales críticos","Energía inteligente","Descarbonización industrial"],prepare:"Consorcio sólido, tecnología innovadora, sitio de demostración, ruta de comercialización, presupuesto y evidencia de impacto transformador.",note:"No es una convocatoria ordinaria para ideas tempranas: prioriza proyectos faro escalables y listos para demostración."},
- {name:"Adaptation SMEs Innovation Facility — ASIF",short:"ASIF LATAM",url:"https://bfaglobal.com/asif-latam/",image:"/brand/woman-science.jpeg",fit:"Startups y PYMES de adaptación climática, desde prototipos por validar hasta soluciones en mercado con potencial de escala.",benefit:"Ignite ofrece validación remota y apoyo experto; Propel combina acompañamiento especializado con subvenciones por desempeño.",support:"Aceleración + subvención",areas:["Agroalimentos","Finanzas para resiliencia","Economía azul","Resiliencia urbana","Salud"],prepare:"Definir etapa: Ignite para prototipo sin validación real; Propel para producto con usuarios, tracción e impacto de adaptación escalable.",note:"Propel contempla subvenciones de USD 70.000–90.000; requiere revisar elegibilidad y carta de la Autoridad Designada."},
- {name:"UNIDO ONE World Sustainability Awards",short:"ONE WORLD AWARDS",url:"https://www.unido.org/oneworld-sustainability-awards",image:"/brand/women-industry.jpeg",fit:"Empresas y startups con resultados comprobables en sostenibilidad, innovación industrial y modelos escalables.",benefit:"Credibilidad ONUDI, visibilidad global, acceso a redes, alianzas y exposición ante inversionistas, gobiernos y líderes empresariales.",support:"Premio y posicionamiento",areas:["Cadenas de suministro sostenibles","Startups innovadoras","Mujeres en la industria"],prepare:"Resultados medibles, innovación, sostenibilidad de largo plazo, escalabilidad y una narrativa clara de impacto empresarial y social.",note:"La evaluación considera sostenibilidad, impacto, innovación y escalabilidad mediante preselección técnica y jurado independiente."},
+ {name:"UNIDO–WTCA Blue Economy Global Call 2026",short:"BLUE ECONOMY",url:"https://itpo-rome.unido.org/GlobalCall2026/",image:"/brand/minae-national-parks.jpg",fit:"MIPYMES y empresas con soluciones innovadoras, escalables y listas para desplegar en la economía azul.",benefit:"Visibilidad internacional, conexiones empresariales y de inversión, promoción ante la red ONUDI–WTCA y posicionamiento global.",support:"Aceleración y matchmaking",areas:["Energía azul renovable","Alimentos azules sostenibles","Puertos y transporte verde","Turismo costero","Restauración acuática","Blue Tech y biotecnología"],prepare:"Solución demostrable, evidencia de impacto, escalabilidad, modelo de negocio y propuesta de despliegue internacional.",note:"La convocatoria admite postulaciones de micro, pequeñas, medianas y grandes empresas."},
+ {name:"Accelerate-to-Demonstrate Facility",short:"A2D FACILITY",url:"https://a2dfacility.unido.org/",image:"/brand/ina-vr-training.jpg",fit:"Empresas y consorcios capaces de implementar proyectos demostrativos catalíticos en países elegibles para AOD.",benefit:"Subvención para implementar y operar demostraciones que reduzcan el riesgo tecnológico y aceleren la comercialización.",support:"Financiamiento demostrativo",areas:["Hidrógeno limpio","Minerales críticos","Energía inteligente","Descarbonización industrial"],prepare:"Consorcio sólido, tecnología innovadora, sitio de demostración, ruta de comercialización, presupuesto y evidencia de impacto transformador.",note:"No es una convocatoria ordinaria para ideas tempranas: prioriza proyectos faro escalables y listos para demostración."},
+ {name:"Adaptation SMEs Innovation Facility — ASIF",short:"ASIF LATAM",url:"https://bfaglobal.com/asif-latam/",image:"/brand/calls-agro-biotech.jpg",fit:"Startups y PYMES de adaptación climática, desde prototipos por validar hasta soluciones en mercado con potencial de escala.",benefit:"Ignite ofrece validación remota y apoyo experto; Propel combina acompañamiento especializado con subvenciones por desempeño.",support:"Aceleración + subvención",areas:["Agroalimentos","Finanzas para resiliencia","Economía azul","Resiliencia urbana","Salud"],prepare:"Definir etapa: Ignite para prototipo sin validación real; Propel para producto con usuarios, tracción e impacto de adaptación escalable.",note:"Propel contempla subvenciones de USD 70.000–90.000; requiere revisar elegibilidad y carta de la Autoridad Designada."},
+ {name:"UNIDO ONE World Sustainability Awards",short:"ONE WORLD AWARDS",url:"https://www.unido.org/oneworld-sustainability-awards",image:"/brand/calls-circular-enterprise.jpg",fit:"Empresas y startups con resultados comprobables en sostenibilidad, innovación industrial y modelos escalables.",benefit:"Credibilidad ONUDI, visibilidad global, acceso a redes, alianzas y exposición ante inversionistas, gobiernos y líderes empresariales.",support:"Premio y posicionamiento",areas:["Cadenas de suministro sostenibles","Startups innovadoras","Mujeres en la industria"],prepare:"Resultados medibles, innovación, sostenibilidad de largo plazo, escalabilidad y una narrativa clara de impacto empresarial y social.",note:"La evaluación considera sostenibilidad, impacto, innovación y escalabilidad mediante preselección técnica y jurado independiente."},
 ];
 const minaePriorities=[
- {n:"01",title:"Parques nacionales con modelos económicos sostenibles",image:"/brand/women-industry.jpeg",reading:"La conservación se vuelve durable cuando los territorios generan ingresos, empresas locales y financiamiento que reducen la presión sobre los ecosistemas.",projects:["Talamanca Transforma","Juventud rural en La Cruz","Economía azul y ecosistemas de surf","Adaptación climática"],mechanisms:["Bioeconomía y economía circular","Emprendimientos comunitarios","Fondos para conservación","Turismo y cadenas territoriales"],engagement:"ONUDI conecta gestión territorial, capacidades productivas, capital semilla, inversión privada y fondos ambientales.",amount:"USD 5,37 M+"},
- {n:"02",title:"Gobernanza marina y océanos",image:"/brand/woman-solar.jpeg",reading:"La gobernanza marina puede proteger ecosistemas y, simultáneamente, ordenar oportunidades económicas en turismo, pesca, servicios costeros y tecnología azul.",projects:["Economía azul y ecosistemas de surf","Segunda fase de economía azul","Blue Economy Global Call","Talamanca costera"],mechanisms:["MIPYMES azules","Financiamiento positivo para la naturaleza","Tecnología y restauración","Empleo verde costero"],engagement:"ONUDI agrega la dimensión empresarial y de inversión a la gobernanza, vinculando comunidades, gobiernos locales, sector privado y cooperación.",amount:"USD 3,04 M+"},
- {n:"03",title:"Diversificación energética renovable",image:"/brand/woman-solar.jpeg",reading:"Diversificar la matriz exige pasar de estrategias a proyectos financiables, proveedores capacitados, demostraciones y demanda industrial.",projects:["Estrategia nacional de biometano","REIF Biometano","Hidrógeno verde","A2D Facility","Segunda vida de baterías"],mechanisms:["Garantías y blended finance","Proyectos demostrativos","Regulación y calidad","Proveedores y competencias"],engagement:"ONUDI articula política, tecnología, financiamiento climático, industria e INA para acelerar la adopción y reducir riesgos de inversión.",amount:"USD 13,78 M+"},
+ {n:"01",title:"Parques nacionales con modelos económicos sostenibles",image:"/brand/minae-ocean-governance.jpg",reading:"La conservación se vuelve durable cuando los territorios generan ingresos, empresas locales y financiamiento que reducen la presión sobre los ecosistemas.",projects:["Talamanca Transforma","Juventud rural en La Cruz","Economía azul y ecosistemas de surf","Adaptación climática"],mechanisms:["Bioeconomía y economía circular","Emprendimientos comunitarios","Fondos para conservación","Turismo y cadenas territoriales"],engagement:"ONUDI conecta gestión territorial, capacidades productivas, capital semilla, inversión privada y fondos ambientales.",amount:"USD 5,37 M+"},
+ {n:"02",title:"Gobernanza marina y océanos",image:"/brand/minae-national-parks.jpg",reading:"La gobernanza marina puede proteger ecosistemas y, simultáneamente, ordenar oportunidades económicas en turismo, pesca, servicios costeros y tecnología azul.",projects:["Economía azul y ecosistemas de surf","Segunda fase de economía azul","Blue Economy Global Call","Talamanca costera"],mechanisms:["MIPYMES azules","Financiamiento positivo para la naturaleza","Tecnología y restauración","Empleo verde costero"],engagement:"ONUDI agrega la dimensión empresarial y de inversión a la gobernanza, vinculando comunidades, gobiernos locales, sector privado y cooperación.",amount:"USD 3,04 M+"},
+ {n:"03",title:"Diversificación energética renovable",image:"/brand/minae-renewable-agriculture.jpg",reading:"Diversificar la matriz exige pasar de estrategias a proyectos financiables, proveedores capacitados, demostraciones y demanda industrial.",projects:["Estrategia nacional de biometano","REIF Biometano","Hidrógeno verde","A2D Facility","Segunda vida de baterías"],mechanisms:["Garantías y blended finance","Proyectos demostrativos","Regulación y calidad","Proveedores y competencias"],engagement:"ONUDI articula política, tecnología, financiamiento climático, industria e INA para acelerar la adopción y reducir riesgos de inversión.",amount:"USD 13,78 M+"},
  {n:"04",title:"Desarrollo económico ambiental",image:"/brand/women-production.jpeg",reading:"La sostenibilidad escala cuando se traduce en productividad, nuevos mercados, reducción de costos, innovación, empleo y cadenas de suministro competitivas.",projects:["Construcción circular","Construcción baja en carbono","Normas para acción climática","Global Matchmaking Platform","ASIF"],mechanisms:["Cofinanciamiento privado","Materiales sostenibles","Adaptación financiable","Innovación empresarial"],engagement:"ONUDI convierte objetivos ambientales en carteras de inversión, capacidades empresariales, estándares y soluciones industriales medibles.",amount:"USD 152,2 M+"},
 ];
 const magLines=[
@@ -456,9 +470,32 @@ export default function Home() {
     [axisFilter, setAxisFilter] = useState("Todos los ejes"),
     [query, setQuery] = useState(""),
     [selected, setSelected] = useState<Item | null>(null),
+    [portfolioTarget, setPortfolioTarget] = useState<string | null>(null),
     [story, setStory] = useState(0),
     [meicStage, setMeicStage] = useState("Vigente"),
     [inaFocus, setInaFocus] = useState("Agropecuario");
+  useEffect(() => {
+    if (section !== "Portafolio" || !portfolioTarget) return;
+    const item = I.find(entry => entry.name === portfolioTarget);
+    if (item) setSelected(item);
+    setPortfolioTarget(null);
+  }, [section, portfolioTarget]);
+  const findPortfolioItem = (name:string) => {
+    const alias = portfolioAliases[name] || Object.entries(portfolioAliases).find(([key])=>key.toLowerCase()===name.toLowerCase())?.[1];
+    return I.find(item => item.name.toLowerCase() === name.toLowerCase() || item.name === alias);
+  };
+  const openPortfolioItem = (name:string) => {
+    const item = findPortfolioItem(name);
+    if (!item) return;
+    setStatus("Todos"); setComponentFilter("Todos los componentes"); setAxisFilter("Todos los ejes"); setQuery("");
+    setSelected(null);
+    setPortfolioTarget(item.name);
+    setSection("Portafolio");
+  };
+  const portfolioTag = (name:string) => {
+    const item = findPortfolioItem(name);
+    return item ? <button type="button" className="portfolioLinkTag" onClick={()=>openPortfolioItem(name)}>{name}<span>↗</span></button> : <span>{name}</span>;
+  };
   const filtered = useMemo(
     () =>
       I.filter(
@@ -501,10 +538,11 @@ export default function Home() {
             <div className="heroCopy">
               <p className="eyebrow">COMPETITIVIDAD Y DESARROLLO INDUSTRIAL SOSTENIBLE</p>
               <h1>
-                Costa Rica necesita
+                De las prioridades nacionales
                 <br />
-                <em>convertir prioridades en inversión.</em>
+                <em>a la inversión y los resultados productivos.</em>
               </h1>
+              <p className="brandStatement">ONUDI: Progreso mediante innovación</p>
               <p className="lede">
                 ONUDI aporta la capacidad especializada para conectar política pública,
                 empresas, tecnología, calidad, talento y financiamiento internacional,
@@ -513,10 +551,10 @@ export default function Home() {
               <div className="heroActions"><button onClick={()=>setSection("Portafolio")}>Explorar la cartera</button><button onClick={()=>setSection("Programa País")}>Ver arquitectura del Programa País</button></div>
             </div>
             <div className="heroVisual">
-              <img src="/brand/women-industry.jpeg" alt="Mujer trabajando con tecnología industrial" />
+              <img src="/brand/hero-industry-logistics.jpg" alt="Mujer operando equipo logístico en una instalación industrial" />
               <div className="heroTotal">
                 <span>PORTAFOLIO + OPORTUNIDADES</span>
-                <strong>$173,7 M</strong>
+                <strong>$176,32 M</strong>
                 <small>USD · recursos movilizados y oportunidades</small>
               </div>
             </div>
@@ -524,12 +562,12 @@ export default function Home() {
           <section className="kpis">
             <article>
               <span>RECURSOS MOVILIZADOS</span>
-              <strong>$134,8 M</strong>
+              <strong>$134,77 M</strong>
               <small>proyectos y cofinanciamiento movilizado</small>
             </article>
             <article>
               <span>PIPELINE EN GESTIÓN</span>
-              <strong>$33,9 M</strong>
+              <strong>$36,44 M</strong>
               <small>propuestas sujetas a aprobación</small>
             </article>
             <article>
@@ -562,11 +600,11 @@ export default function Home() {
               <div className="legend">
                 <span>
                   <b className="dot green" />
-                  Movilizado · 77,6%
+                  Movilizado · 76,4%
                 </span>
                 <span>
                   <b className="dot gold" />
-                  Pipeline · 19,5%
+                  Pipeline · 20,7%
                 </span>
                 <span>
                   <b className="dot blue" />
@@ -585,9 +623,9 @@ export default function Home() {
           </section>
           <section className="governmentCase">
             <div className="governmentLead"><p className="eyebrow">POR QUÉ ONUDI</p><h2>La pieza que conecta la ambición pública con la ejecución industrial</h2><p>El valor no reside únicamente en administrar cooperación. ONUDI integra especialización industrial, formulación de proyectos, acceso a redes globales y capacidad de implementación para cerrar la brecha entre una prioridad nacional y un resultado productivo.</p></div>
-            <div className="governmentFlow"><article><span>01</span><b>Prioridad nacional</b><p>PNDIP, energía, ambiente, agro, MIPYMES y empleo.</p></article><article><span>02</span><b>Diseño industrial</b><p>Soluciones, normas, capacidades, tecnología y cadenas de valor.</p></article><article><span>03</span><b>Movilización</b><p>Fondos climáticos, cooperación, convocatorias y capital privado.</p></article><article><span>04</span><b>Resultado país</b><p>Competitividad, inversión, empleo, proveedores y sostenibilidad.</p></article></div>
+            <div className="governmentFlow"><article><span>01</span><b>Prioridad nacional</b><p>PNDIP, políticas, planes y estrategias sectoriales de alcance nacional que incidan en territorios.</p></article><article><span>02</span><b>Diseño industrial</b><p>Soluciones, normas, capacidades, tecnología y cadenas de valor.</p></article><article><span>03</span><b>Movilización</b><p>Fondos climáticos, cooperación, convocatorias, capital privado y mecanismos de financiamiento adecuados a cada cadena de valor.</p></article><article><span>04</span><b>Resultado país</b><p>Competitividad, inversión, empleo, proveedores y sostenibilidad.</p></article></div>
           </section>
-          <section className="summaryCharts"><div className="summaryChartsHead"><p className="eyebrow">CARTERA EN PERSPECTIVA</p><h2>Una plataforma para movilizar capacidades y recursos</h2></div><div className="summaryChartGrid"><Chart title="Recursos por estado · USD millones" data={[["Movilizado",134.76],["Pipeline",33.87],["Convocatorias",5.10]]}/><Chart title="Intervenciones por componente" data={[["Habilidades",9],["Energía",11],["Circularidad",13],["Calidad",10]]}/><Chart title="Ejes transversales activados" data={[["Género y juventud",8],["MIPYMES",18],["I+D+i",20],["Cadenas sostenibles",22]]}/></div><p>Las intervenciones pueden contribuir a más de un componente y eje transversal; por ello, las categorías no son sumables.</p></section>
+          <section className="summaryCharts"><div className="summaryChartsHead"><p className="eyebrow">CARTERA EN PERSPECTIVA</p><h2>Una plataforma para movilizar capacidades y recursos</h2></div><div className="summaryChartGrid"><Chart title="Recursos por estado · USD millones" data={[["Movilizado",134.77],["Pipeline",36.44],["Convocatorias",5.10]]}/><Chart title="Intervenciones por componente" data={[["Habilidades",9],["Energía",11],["Circularidad",13],["Calidad",10]]}/><Chart title="Ejes transversales activados" data={[["Género y juventud",8],["MIPYMES",18],["I+D+i",20],["Cadenas sostenibles",22]]}/></div><p>Las intervenciones pueden contribuir a más de un componente y eje transversal; por ello, las categorías no son sumables.</p></section>
           <section className="stories">
             <div className="storyImage">
               <img src={["/brand/woman-science.jpeg","/brand/women-production.jpeg","/brand/woman-solar.jpeg"][story]} alt={["Mujer científica en un laboratorio","Mujeres en una cadena de producción industrial","Mujer profesional en energía solar"][story]} />
@@ -611,7 +649,7 @@ export default function Home() {
                   <header><span>{component.n}</span><b>ÁREA TEMÁTICA · COMPONENTE DEL PROGRAMA PAÍS</b></header>
                   <h3>{component.title}</h3>
                   <div className="priorityBlock"><small>PRIORIDAD PNDIP 2023–2026</small><p>{component.pndip}</p></div>
-                  <div className="priorityBlock"><small>ACCIONES DEL PORTAFOLIO ONUDI</small><div className="actionTags">{component.actions.split(" · ").map(action=><span key={action}>{action}</span>)}</div></div>
+                  <div className="priorityBlock"><small>ACCIONES DEL PORTAFOLIO ONUDI</small><div className="actionTags">{component.actions.map(action=><button type="button" className="summaryActionLink" key={action.item} onClick={()=>openPortfolioItem(action.item)} aria-label={`Abrir ${action.label} en Portafolio`}>{action.label}<span aria-hidden="true">↗</span></button>)}</div></div>
                   <button onClick={() => setSection("Programa País")}>Explorar componente <span aria-hidden="true">→</span></button>
                 </article>
               ))}
@@ -631,7 +669,7 @@ export default function Home() {
       )}
       {section === "Programa País" && <section className="page cpPage">
         <Title eyebrow="ARQUITECTURA DEL PROGRAMA PAÍS 2024–2028" title="La industria como hilo conductor" text="Componentes, ejes transversales y acciones que conectan capacidades, productividad, sostenibilidad y acceso a mercados." />
-        <div className="cpComponents">{cpComponents.map(c=><article key={c.n}><header><span>{c.n}</span><b className={`match ${c.level.toLowerCase()}`}>{c.level}</b></header><h2>{c.title}</h2><p className="industrialLink">{c.industry}</p><dl><div><dt>Acciones ONUDI</dt><dd>{c.actions}</dd></div><div><dt>Contribución al PNDIP</dt><dd>{c.pndip}</dd></div></dl></article>)}</div>
+        <div className="cpComponents">{cpComponents.map(c=><article key={c.n}><header><span>{c.n}</span><b className={`match ${c.level.toLowerCase()}`}>{c.level}</b></header><h2>{c.title}</h2><p className="industrialLink">{c.industry}</p><dl><div><dt>Acciones ONUDI</dt><dd className="cpActionLinks">{c.actions.map(action=><button type="button" key={action.item} onClick={()=>openPortfolioItem(action.item)} aria-label={`Abrir ${action.label} en Portafolio`}>{action.label}<span aria-hidden="true">↗</span></button>)}</dd></div><div><dt>Contribución al PNDIP</dt><dd>{c.pndip}</dd></div></dl></article>)}</div>
         <section className="crossSection"><div><p className="eyebrow">EJES TRANSVERSALES</p><h2>Capacidades que atraviesan toda la cartera</h2><p>No son líneas independientes: funcionan como criterios de diseño para que cada intervención industrial genere inclusión, innovación, competitividad y sostenibilidad.</p></div><div className="crossGrid">{crossAxes.map((a,i)=><article key={a[0]}><span>0{i+1}</span><h3>{a[0]}</h3><p>{a[1]}</p></article>)}</div></section>
         <section className="cpConclusion"><p className="eyebrow">LECTURA INDUSTRIAL</p><h2>ONUDI actúa como capa de implementación productiva</h2><p>El Programa País traduce prioridades públicas en capacidades técnicas, estándares, tecnologías, proyectos financiables y alianzas empresariales. Su aporte no se limita a “industria” como sector: utiliza la transformación productiva para incidir en empleo, clima, territorios, comercio, innovación y cooperación internacional.</p></section>
       </section>}
@@ -692,10 +730,10 @@ export default function Home() {
       )}
       {section === "MEIC" && (
         <section className="page meicPage">
-          <div className="meicHero"><div><p className="eyebrow">ALINEACIÓN 2026–2028</p><h1>Una agenda productiva concreta con el MEIC</h1><p>Dieciséis sinergias convierten el Programa País en servicios, inversión, capacidades y oportunidades para empresas y MIPYMES.</p></div><img src="/brand/women-production.jpeg" alt="Mujeres trabajando en una cadena de producción industrial"/></div>
-          <div className="meicKpis"><article><strong>16</strong><span>sinergias identificadas</span></article><article><strong>8 + 8</strong><span>iniciativas vigentes y en pipeline</span></article><article><strong>4</strong><span>componentes del Programa País</span></article><article><strong>USD 173,7 M</strong><span>portafolio y oportunidades del Excel</span></article></div>
-          <div className="meicCharts"><Chart title="Cobertura por componente" data={[["Habilidades",2],["Energía y descarbonización",4],["Circularidad",5],["Infraestructura de calidad",5]]}/><Chart title="Composición financiera MEIC" data={[["Movilizado",134.76],["Pipeline",33.87],["Convocatorias",5.10]]}/></div>
-          <section className="meicMatrix"><div className="meicMatrixHead"><div><p className="eyebrow">MATRIZ DEL EXCEL</p><h2>Sinergias y articulación 2026–2028</h2></div><div className="stageSwitch"><button className={meicStage==="Vigente"?"active":""} onClick={()=>setMeicStage("Vigente")}>Portafolio vigente · 8</button><button className={meicStage==="Pipeline"?"active":""} onClick={()=>setMeicStage("Pipeline")}>Pipeline estratégico · 8</button></div></div><div className="meicSynergyGrid">{meicSynergies.filter(x=>x.stage===meicStage).map(x=><article key={x.name}><header><span>{x.component}</span><b>{x.amount}</b></header><h3>{x.name}</h3><dl><div><dt>Beneficio empresarial</dt><dd>{x.benefit}</dd></div><div><dt>Relevancia para el MEIC</dt><dd>{x.relevance}</dd></div><div><dt>Articulación propuesta</dt><dd>{x.action}</dd></div></dl></article>)}</div></section>
+          <div className="meicHero"><div><p className="eyebrow">ALINEACIÓN 2026–2028</p><h1>Una agenda productiva concreta con el MEIC</h1><p>Dieciséis sinergias convierten el Programa País en servicios, inversión, capacidades y oportunidades para empresas y MIPYMES.</p></div><img src="/brand/meic-production-logistics.jpg" alt="Mujer supervisando inventario y logística en una empresa"/></div>
+          <div className="meicKpis"><article><strong>16</strong><span>sinergias identificadas</span></article><article><strong>8 + 8</strong><span>iniciativas vigentes y en pipeline</span></article><article><strong>4</strong><span>componentes del Programa País</span></article><article><strong>USD 176,32 M</strong><span>portafolio y oportunidades del Excel</span></article></div>
+          <div className="meicCharts"><Chart title="Cobertura por componente" data={[["Habilidades",2],["Energía y descarbonización",4],["Circularidad",5],["Infraestructura de calidad",5]]}/></div>
+          <section className="meicMatrix"><div className="meicMatrixHead"><div><p className="eyebrow">MATRIZ DEL EXCEL</p><h2>Sinergias y articulación 2026–2028</h2></div><div className="stageSwitch"><button className={meicStage==="Vigente"?"active":""} onClick={()=>setMeicStage("Vigente")}>Portafolio vigente · 8</button><button className={meicStage==="Pipeline"?"active":""} onClick={()=>setMeicStage("Pipeline")}>Pipeline estratégico · 8</button></div></div><div className="meicSynergyGrid">{meicSynergies.filter(x=>x.stage===meicStage).map(x=><article key={x.name}><header><span>{x.component}</span><b>{x.amount}</b></header><button type="button" className="portfolioTitleLink" onClick={()=>openPortfolioItem(x.name)}>{x.name}<span>↗</span></button><dl><div><dt>Beneficio empresarial</dt><dd>{x.benefit}</dd></div><div><dt>Relevancia para el MEIC</dt><dd>{x.relevance}</dd></div><div><dt>Articulación propuesta</dt><dd>{x.action}</dd></div></dl></article>)}</div></section>
           <div className="callout">
             <div>
               <p className="eyebrow">SIGUIENTE DECISIÓN</p>
@@ -706,7 +744,7 @@ export default function Home() {
             </div>
             <div className="value">
               <span>POTENCIAL TOTAL</span>
-              <strong>$173,7 M</strong>
+              <strong>$176,32 M</strong>
               <small>No equivale a fondos líquidos del Gobierno.</small>
             </div>
           </div>
@@ -715,40 +753,38 @@ export default function Home() {
       {section === "MINAE" && (
         <section className="page minaePage">
           <div className="minaeHero"><div><p className="eyebrow">PORTAFOLIO ONUDI × MINAE</p><h1>Del desarrollo sostenible al desarrollo económico</h1><p>Una cartera que transforma prioridades ambientales en inversión, empresas, empleo, capacidades nacionales y modelos económicos capaces de sostener la conservación en el tiempo.</p></div><div className="minaeHeroVisual"><img src="/brand/woman-solar.jpeg" alt="Profesional vinculada con energía renovable y desarrollo sostenible"/><div><strong>4</strong><span>prioridades MINAE articuladas</span></div></div></div>
-          <div className="minaeKpis"><article><strong>18+</strong><span>intervenciones con incidencia ambiental</span></article><article><strong>USD 134,8 M</strong><span>recursos y cofinanciamiento movilizados</span></article><article><strong>USD 33,9 M</strong><span>pipeline sujeto a aprobación</span></article><article><strong>4 × 4</strong><span>prioridades MINAE y componentes del Programa País</span></article></div>
+          <div className="minaeKpis"><article><strong>18+</strong><span>intervenciones con incidencia ambiental</span></article><article><strong>USD 134,77 M</strong><span>recursos y cofinanciamiento movilizados</span></article><article><strong>USD 36,44 M</strong><span>pipeline sujeto a aprobación</span></article><article><strong>4 × 4</strong><span>prioridades MINAE y componentes del Programa País</span></article></div>
           <section className="minaeThesis"><div><p className="eyebrow">LECTURA ESTRATÉGICA</p><h2>La conservación necesita una economía que la sostenga</h2></div><p>El engagement construido por ONUDI permite ampliar la acción ambiental más allá de proyectos aislados. El portafolio combina política pública, territorios, empresas, tecnología, infraestructura de calidad y financiamiento para que los beneficios ambientales generen también actividad económica inclusiva. Los montos por prioridad son indicativos y no deben sumarse, porque varias intervenciones contribuyen a más de una.</p></section>
-          <div className="minaePriorityGrid">{minaePriorities.map(p=><article key={p.n}><div className="minaePriorityImage"><img src={p.image} alt="Desarrollo económico ambiental"/><span>{p.n}</span></div><div className="minaePriorityBody"><p className="eyebrow">PRIORIDAD MINAE</p><h2>{p.title}</h2><strong className="minaeAmount">{p.amount}<small>portafolio relacionado indicativo</small></strong><p className="minaeReading">{p.reading}</p><div className="minaeColumns"><div><small>INTERVENCIONES RELACIONADAS</small>{p.projects.map(x=><span key={x}>{x}</span>)}</div><div><small>MECANISMOS ECONÓMICOS</small>{p.mechanisms.map(x=><span key={x}>{x}</span>)}</div></div><div className="minaeEngagement"><b>Valor agregado ONUDI</b><p>{p.engagement}</p></div></div></article>)}</div>
+          <div className="minaePriorityGrid">{minaePriorities.map(p=><article key={p.n}><div className="minaePriorityImage"><img src={p.image} alt="Desarrollo económico ambiental"/><span>{p.n}</span></div><div className="minaePriorityBody"><p className="eyebrow">PRIORIDAD MINAE</p><h2>{p.title}</h2><strong className="minaeAmount">{p.amount}<small>portafolio relacionado indicativo</small></strong><p className="minaeReading">{p.reading}</p><div className="minaeColumns"><div><small>INTERVENCIONES RELACIONADAS</small>{p.projects.map(x=><span key={x}>{portfolioTag(x)}</span>)}</div><div><small>MECANISMOS ECONÓMICOS</small>{p.mechanisms.map(x=><span key={x}>{x}</span>)}</div></div></div></article>)}</div>
           <div className="minaeCharts"><Chart title="Intervenciones vinculadas por prioridad" data={[["Parques y territorios",4],["Océanos",4],["Energía renovable",5],["Economía ambiental",5]]}/><Chart title="Instrumentos activados" data={[["Asistencia técnica",12],["Financiamiento",8],["Calidad y normas",7],["Innovación",10],["Capacidades",11]]}/></div>
           <section className="minaeEngagementMap"><div><p className="eyebrow">NIVEL DE ENGAGEMENT</p><h2>Una relación que cubre el ciclo completo</h2><p>La ventaja del portafolio es la continuidad entre prioridades públicas y ejecución económica.</p></div><ol><li><span>01</span><b>Definir</b><p>Estrategias, normas, hojas de ruta y prioridades.</p></li><li><span>02</span><b>Preparar</b><p>Pipeline, estudios, empresas y proyectos financiables.</p></li><li><span>03</span><b>Movilizar</b><p>Fondos ambientales, cooperación y capital privado.</p></li><li><span>04</span><b>Implementar</b><p>Pilotos, tecnologías, capacidades y modelos de negocio.</p></li><li><span>05</span><b>Escalar</b><p>Mercados, proveedores, territorios y aprendizaje regional.</p></li></ol></section>
-          <div className="minaeCallout"><div><p className="eyebrow">OPORTUNIDAD INSTITUCIONAL</p><h2>Consolidar una cartera MINAE–ONUDI de desarrollo económico ambiental</h2><p>Priorizar conjuntamente las intervenciones, establecer responsables técnicos y estructurar una ruta de inversión permitiría convertir el pipeline en resultados ambientales y económicos verificables.</p></div><strong>2026–2028<small>horizonte de articulación</small></strong></div>
+          <div className="minaeCallout"><div><p className="eyebrow">SINERGIA COMPROBADA EN EL EXCEL</p><h2>13 intervenciones vinculan directamente a ONUDI con el MINAE</h2><p>Seis acciones movilizadas y siete iniciativas del pipeline identifican al MINAE como contraparte, punto focal o institución con potencial de articulación. En conjunto representan USD 168,59 millones asociados; la Global Matchmaking Platform se añade al conteo, pero no al monto porque su valor está pendiente de determinar.</p></div><strong>USD 168,59 M<small>portafolio y pipeline relacionados</small></strong></div>
         </section>
       )}
       {section === "MAG" && (
         <section className="page magPage">
-          <div className="magHero"><div><p className="eyebrow">PORTAFOLIO ONUDI × MAG</p><h1>Competitividad agroproductiva con sostenibilidad y valor agregado</h1><p>El trabajo conjunto conecta trazabilidad, infraestructura de calidad, bioeconomía, resiliencia y cooperación técnica para transformar capacidades públicas en beneficios para productores, agroindustrias y territorios.</p></div><img src="/brand/women-production.jpeg" alt="Mujeres vinculadas con producción y cadenas agroindustriales"/></div>
+          <div className="magHero"><div><p className="eyebrow">PORTAFOLIO ONUDI × MAG</p><h1>Competitividad agroproductiva con sostenibilidad y valor agregado</h1><p>Hasta ahora, ONUDI y el MAG han trabajado en trazabilidad y sostenibilidad del café, actualización del Mapa de Uso Agropecuario, intercambio técnico Sur–Sur, preparación para mercados internacionales y soluciones de bioenergía, adaptación y desarrollo territorial con potencial para productores y agroindustrias.</p></div><img src="/brand/mag-digital-agriculture.jpg" alt="Productora utilizando una tableta para gestionar cultivos"/></div>
           <div className="magKpis"><article><strong>4</strong><span>líneas de articulación</span></article><article><strong>10+</strong><span>intervenciones relacionadas</span></article><article><strong>4</strong><span>cadenas y ámbitos: café, carne, bioenergía y territorios</span></article><article><strong>2024–2030</strong><span>continuidad entre ejecución y pipeline</span></article></div>
-          <section className="magThesis"><div><p className="eyebrow">TRABAJO Y POTENCIAL</p><h2>De requisitos productivos a oportunidades económicas</h2></div><p>La cooperación con ONUDI permite que las agendas de sostenibilidad del sector agropecuario se traduzcan en trazabilidad verificable, eficiencia de recursos, productos diferenciados, proyectos financiables y acceso a mercados. Los montos mostrados son indicativos y no deben sumarse porque algunas intervenciones contribuyen a más de una línea.</p></section>
-          <div className="magLines">{magLines.map(line=><article key={line.n}><header><span>{line.n}</span><b>{line.status}</b></header><h2>{line.title}</h2><strong>{line.amount}<small>portafolio relacionado indicativo</small></strong><div className="magProjects">{line.projects.map(p=><span key={p}>{p}</span>)}</div><dl><div><dt>Trabajo demostrado</dt><dd>{line.result}</dd></div><div><dt>Potencial de articulación</dt><dd>{line.potential}</dd></div></dl></article>)}</div>
+          <div className="magLines">{magLines.map(line=><article key={line.n}><header><span>{line.n}</span><b>{line.status}</b></header><h2>{line.title}</h2><strong>{line.amount}<small>portafolio relacionado indicativo</small></strong><div className="magProjects">{line.projects.map(p=><span key={p}>{portfolioTag(p)}</span>)}</div><dl><div><dt>Trabajo demostrado</dt><dd>{line.result}</dd></div><div><dt>Potencial de articulación</dt><dd>{line.potential}</dd></div></dl></article>)}</div>
           <div className="magCharts"><Chart title="Intervenciones por línea de trabajo" data={[["Calidad y mercados",4],["Bioeconomía y energía",3],["Resiliencia",4],["Territorios",4]]}/><Chart title="Capacidades que activa el portafolio" data={[["Trazabilidad",5],["Innovación",6],["Financiamiento",4],["Formación",7],["Cooperación",4]]}/></div>
           <section className="magValue"><div><p className="eyebrow">VALOR PARA EL SECTOR</p><h2>Una cadena de resultados que llega al productor</h2></div><ol><li><span>01</span><b>Evidencia</b><p>Mapas, datos, trazabilidad y evaluación de riesgos.</p></li><li><span>02</span><b>Capacidad</b><p>Formación, normas y asistencia técnica especializada.</p></li><li><span>03</span><b>Inversión</b><p>Proyectos preparados, garantías y convocatorias.</p></li><li><span>04</span><b>Mercado</b><p>Cumplimiento, diferenciación y nuevas oportunidades comerciales.</p></li></ol></section>
-          <div className="magCallout"><div><p className="eyebrow">SIGUIENTE NIVEL DE ENGAGEMENT</p><h2>Construir una cartera agroindustrial MAG–ONUDI</h2><p>Una priorización conjunta de cadenas, territorios y empresas permitiría escalar las herramientas existentes, preparar proyectos de bioeconomía y adaptación, y articular cooperación, financiamiento y acceso a mercados.</p></div><strong>2026–2028<small>horizonte propuesto</small></strong></div>
+          <div className="magCallout evidenceOnly"><div className="magCalloutEvidence"><strong>2026–2028<small>horizonte propuesto</small></strong><div><b>15 / 100</b><p>El QI4SD 2024 sitúa la evaluación de la conformidad como la principal brecha de Costa Rica. Para el sector agroproductivo, esto refuerza la importancia de ampliar servicios de ensayo, inspección, certificación y trazabilidad accesibles para productores, cooperativas y agroindustrias.</p></div><small>Fuente: plataforma QI4SD de ONUDI, edición 2024.</small></div></div>
         </section>
       )}
       {section === "INA" && (
         <section className="page inaPage">
-          <div className="inaHero"><div><p className="eyebrow">12 NÚCLEOS TÉCNICOS</p><h1>Del portafolio a nuevas capacidades industriales</h1><p>El análisis conecta proyectos movilizados, pipeline y convocatorias con la oferta técnica del INA, e identifica oportunidades concretas de formación, certificación, demostración tecnológica y desarrollo empresarial.</p></div><img src="/brand/women-production.jpeg" alt="Mujeres en formación y producción industrial"/></div>
+          <div className="inaHero"><div><p className="eyebrow">12 NÚCLEOS TÉCNICOS</p><h1>Del portafolio a nuevas capacidades industriales</h1><p>El análisis conecta proyectos movilizados, pipeline y convocatorias con la oferta técnica del INA, e identifica oportunidades concretas de formación, certificación, demostración tecnológica y desarrollo empresarial.</p></div><img src="/brand/ina-vr-training.jpg" alt="Trabajadora realizando una práctica de formación industrial con realidad virtual"/></div>
           <div className="inaKpis"><article><strong>8</strong><span>núcleos con conexión muy alta</span></article><article><strong>1</strong><span>núcleo con conexión alta</span></article><article><strong>3</strong><span>núcleos con conexión media</span></article><article><strong>23</strong><span>intervenciones del portafolio analizadas</span></article></div>
           <section className="inaReading"><div><p className="eyebrow">LECTURA CLAVE</p><h2>El INA puede actuar en cuatro momentos del ciclo industrial</h2><p>La contribución potencial no se limita a impartir cursos: abarca la definición de perfiles, validación tecnológica, certificación de competencias y preparación de empresas y personas para nuevas cadenas de valor.</p></div><div className="inaPath"><article><span>01</span><b>Anticipar</b><p>Detectar competencias requeridas por tecnologías y proyectos emergentes.</p></article><article><span>02</span><b>Formar</b><p>Diseñar rutas técnicas vinculadas con demanda empresarial y territorial.</p></article><article><span>03</span><b>Demostrar</b><p>Usar talleres y laboratorios para probar soluciones y prácticas industriales.</p></article><article><span>04</span><b>Certificar</b><p>Reconocer capacidades para empleo, proveeduría y cumplimiento de estándares.</p></article></div></section>
           <div className="inaCharts"><Chart title="Nivel de conexión de los núcleos" data={[["Muy alta",8],["Alta",1],["Media",3]]}/><Chart title="Núcleos vinculados por componente" data={[["Habilidades",9],["Energía",5],["Circularidad",10],["Calidad",7]]}/></div>
-          <section className="inaExplorer"><div className="inaExplorerHead"><div><p className="eyebrow">EXPLORADOR DE ARTICULACIÓN</p><h2>Qué puede aportar cada núcleo</h2></div><select value={inaFocus} onChange={e=>setInaFocus(e.target.value)} aria-label="Seleccionar núcleo INA">{ina.map(x=><option key={x[0]}>{x[0]}</option>)}</select></div>{(()=>{const x=ina.find(n=>n[0]===inaFocus)!;return <article className="inaFocusCard"><header><div><span className={`connection ${x[1]==="Media"?"medium":"high"}`}>{x[1]}</span><h3>Núcleo {x[0]}</h3><p>{inaSectors[x[0]]}</p></div><strong>{x[2].split(" · ").length}<small>enlaces principales</small></strong></header><div className="inaFocusBody"><div><small>PORTAFOLIO VINCULADO</small><div className="inaProjectTags">{x[2].split(" · ").map(p=><span key={p}>{p}</span>)}</div></div><div><small>OPORTUNIDAD DE ARTICULACIÓN</small><p>{x[3]}</p></div></div></article>})()}</section>
-          <div className="inaImageBand"><img src="/brand/woman-science.jpeg" alt="Mujer desarrollando capacidades científicas y tecnológicas"/><div><p className="eyebrow">POTENCIAL DE IMPLEMENTACIÓN</p><h2>Convertir proyectos en capacidades que permanecen</h2><p>Cuando el INA participa desde el diseño, las inversiones del portafolio pueden dejar perfiles ocupacionales, módulos formativos, certificaciones, laboratorios y proveedores con capacidades instaladas en el país.</p></div></div>
-          <div className="sectionHead inaTableHead"><div><p className="eyebrow">MATRIZ COMPLETA DEL EXCEL</p><h2>Portafolio y oportunidad por núcleo</h2></div></div>
+          <section className="inaExplorer"><div className="inaExplorerHead"><div><p className="eyebrow">EXPLORADOR DE ARTICULACIÓN</p><h2>Qué puede aportar cada núcleo</h2></div><select value={inaFocus} onChange={e=>setInaFocus(e.target.value)} aria-label="Seleccionar núcleo INA">{ina.map(x=><option key={x[0]}>{x[0]}</option>)}</select></div>{(()=>{const x=ina.find(n=>n[0]===inaFocus)!;return <article className="inaFocusCard"><header><div><span className={`connection ${x[1]==="Media"?"medium":"high"}`}>{x[1]}</span><h3>Núcleo {x[0]}</h3><p>{inaSectors[x[0]]}</p></div><strong>{x[2].split(" · ").length}<small>enlaces principales</small></strong></header><div className="inaFocusBody"><div><small>PORTAFOLIO VINCULADO</small><div className="inaProjectTags">{x[2].split(" · ").map(p=><span key={p}>{portfolioTag(p)}</span>)}</div></div><div><small>OPORTUNIDAD DE ARTICULACIÓN</small><p>{x[3]}</p></div></div></article>})()}</section>
+          <div className="inaImageBand"><img src="/brand/ina-technical-design.jpg" alt="Mujer diseñando una solución en un taller técnico"/><div><p className="eyebrow">POTENCIAL DE IMPLEMENTACIÓN</p><h2>Convertir proyectos en capacidades que permanecen</h2><p>Cuando el INA participa desde el diseño, las inversiones del portafolio pueden dejar perfiles ocupacionales, módulos formativos, certificaciones, laboratorios y proveedores con capacidades instaladas en el país.</p></div></div>
+          <div className="sectionHead inaTableHead"><div><p className="eyebrow">MATRIZ COMPLETA DEL EXCEL</p><h2>Portafolio por núcleo</h2></div></div>
           <div className="table">
             <div className="tr head">
               <span>Núcleo</span>
               <span>Conexión</span>
               <span>Proyectos</span>
-              <span>Oportunidad</span>
             </div>
             {ina.map((x) => (
               <div className="tr" key={x[0]}>
@@ -757,8 +793,7 @@ export default function Home() {
                   <i className={x[1] === "Media" ? "medium" : "high"} />
                   {x[1]}
                 </span>
-                <span>{x[2]}</span>
-                <span>{x[3]}</span>
+                <span className="tablePortfolioTags">{x[2].split(" · ").map(p=><span key={p}>{portfolioTag(p)}</span>)}</span>
               </div>
             ))}
           </div>
@@ -766,7 +801,7 @@ export default function Home() {
       )}
       {section === "Convocatorias" && (
         <section className="page callsPage">
-          <div className="callsHero"><div><p className="eyebrow">OPORTUNIDADES PARA EL SECTOR PRIVADO</p><h1>De una buena solución a una oportunidad global</h1><p>Cuatro plataformas para que PYMES y startups accedan a validación, financiamiento demostrativo, visibilidad y conexiones internacionales.</p></div><div className="callsHeroArt"><img src="/brand/woman-science.jpeg" alt="Emprendedora desarrollando una solución tecnológica"/><span>4 rutas de apoyo</span></div></div>
+          <div className="callsHero"><div><p className="eyebrow">OPORTUNIDADES PARA EL SECTOR PRIVADO</p><h1>De una buena solución a una oportunidad global</h1><p>ONUDI abre habitualmente convocatorias dirigidas al sector privado para conectar empresas y startups con validación, financiamiento demostrativo, visibilidad y redes internacionales. En 2026 se activaron las cuatro oportunidades presentadas en esta sección.</p></div><div className="callsHeroArt"><img src="/brand/calls-biotech-innovation.jpg" alt="Investigadora desarrollando una innovación agroalimentaria"/><span>4 convocatorias activadas en 2026</span></div></div>
           <div className="callsKpis"><article><strong>2</strong><span>rutas con subvención o financiamiento</span></article><article><strong>2</strong><span>rutas de visibilidad y conexiones</span></article><article><strong>5+</strong><span>áreas de innovación climática y productiva</span></article><article><strong>PYMES</strong><span>beneficiarias centrales de la selección</span></article></div>
           <section className="callsGuide"><div><p className="eyebrow">LECTURA RÁPIDA</p><h2>¿Cuál oportunidad se ajusta mejor?</h2></div><div className="callsRoutes"><article><b>Validar un prototipo</b><span>ASIF Ignite</span></article><article><b>Escalar adaptación</b><span>ASIF Propel</span></article><article><b>Demostrar tecnología</b><span>A2D Facility</span></article><article><b>Ganar visibilidad</b><span>Global Call · ONE World</span></article></div></section>
           <div className="callsGrid">{privateCalls.map((call,i)=><article key={call.name} className="callCard"><div className="callImage"><img src={call.image} alt="Innovación industrial y empresarial"/><span>0{i+1}</span></div><div className="callContent"><p className="eyebrow">{call.short}</p><h2>{call.name}</h2><div className="supportType">{call.support}</div><dl><div><dt>¿Para quién?</dt><dd>{call.fit}</dd></div><div><dt>Beneficio para la PYME</dt><dd>{call.benefit}</dd></div><div><dt>Cómo prepararse</dt><dd>{call.prepare}</dd></div></dl><div className="callAreas">{call.areas.map(a=><span key={a}>{a}</span>)}</div><p className="callNote">{call.note}</p><a href={call.url} target="_blank" rel="noreferrer">Visitar plataforma oficial <b>↗</b></a></div></article>)}</div>
@@ -781,13 +816,6 @@ export default function Home() {
             title="Del portafolio al contexto industrial"
             text="Herramientas oficiales para consultar, comparar y respaldar decisiones con estadísticas internacionales."
           />
-          <div className="dataIntro">
-            <span>04</span>
-            <p>Recursos especializados de ONUDI</p>
-            <small>
-              Los enlaces abren las plataformas oficiales en una nueva pestaña.
-            </small>
-          </div>
           <section className="crInsights">
             <div className="insightsHead"><div><p className="eyebrow">LECTURA DE COSTA RICA</p><h2>Hallazgos que orientan la acción industrial</h2></div><p>Los globos combinan indicadores publicados por ONUDI con una interpretación estratégica para el Programa País. Los rankings del QI4SD se comparan con economías de tamaño similar.</p></div>
             <div className="insightBubbles">
@@ -879,6 +907,7 @@ export default function Home() {
             </span>
             <h2>{selected.name}</h2>
             <p>{selected.summary}</p>
+            <section className="sourceComponentDetail"><span>ALCANCE</span>{selected.detail.split("\n").map((line,i)=><p key={i}>{line}</p>)}</section>
             <dl>
               <div>
                 <dt>Recursos para Costa Rica</dt>
